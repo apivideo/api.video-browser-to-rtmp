@@ -1,0 +1,24 @@
+{
+  "name": "@api.video/browser-to-rtmp-common",
+  "private": true,
+  "description": "",
+  "main": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
+  "scripts": {
+    "tslint": "tslint --project .",
+    "prepublishOnly": "npm run build",
+    "build": "npm run tslint && tsc",
+    "test": "mocha --reporter spec --require ts-node/register --require tsconfig-paths/register test/**/*.spec.ts --exclude test/sandbox.spec.ts"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "socket.io": "^4.4.0",
+    "tslog": "^3.3.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node14": "^1.0.0",
+    "@types/node": "^14.14.28",
+    "tsconfig-paths": "^3.9.0"
+  }
+}

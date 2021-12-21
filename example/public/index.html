@@ -1,0 +1,49 @@
+<html>
+
+<head>
+    <script src="static/index.js"></script>
+    <style>
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #video {
+            width: 640;
+            height: 480;
+            border: 1px solid gray;
+        }
+
+        #container div {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+
+    </div>
+
+    <script>
+        navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: true
+        }).then((stream) => {
+            const client = new BrowserToRtmpClient(stream, {
+                host: "localhost",
+                rtmpUrl: "rtmp://0.0.0.0:1935/s/abcd",
+                port: 1234
+            });
+
+            client.addListener('error', (e) => console.log(e));
+            client.start();
+
+        }).catch(function (err) {
+            console.error(err);
+        });
+    </script>
+</body>
+
+</html>
