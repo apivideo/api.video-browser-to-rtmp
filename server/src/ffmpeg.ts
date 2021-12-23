@@ -1,23 +1,42 @@
+import { FfmpegConfig, ServerError } from './types';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
-import { EventEmitter } from 'stream';
+import { EventEmitter } from 'events';
 import { Logger } from 'tslog';
-import { FfmpegConfig } from '@api.video/browser-to-rtmp-common';
+import TypedEmitter from "typed-emitter"
 
-const errors = {
-  FFMPEG_NOT_FOUND: { code: 'ENOENT', message: 'ffmpeg executable not found' },
+export const FfmpegErrors: { [name: string]: ServerError } = {
+  FFMPEG_NOT_FOUND: { name: 'FFMPEG_NOT_FOUND', message: 'ffmpeg executable not found', fatal: true },
+  FFMPEG_UNEXPECTED_END: { name: 'FFMPEG_UNEXPECTED_END', message: 'ffmpeg a ended unexpectedly', fatal: true},
+  FFMPEG_NOT_RUNNING: { name: 'FFMPEG_NOT_RUNNING', message: 'ffmpeg is not running yet', fatal: false },
   RTMP_CONNECTION_FAILED: {
-    code: 'RTMP_CONNECTION_FAILED',
+    name: 'RTMP_CONNECTION_FAILED',
     message: 'connection to RTMP server failed',
+    fatal: true
   },
 };
 
-export default class Ffmpeg extends EventEmitter {
+export type FfmpegEvents = {
+  error: (error: ServerError) => void;
+  destroyed: () => void;
+  ffmpegOutput: (message: string) => void;
+}
+
+export type FfmpegStatus = {
+  status: string;
+  framesSent: number;
+  lastFrameSentTime?: number;
+  pid?: number;
+  options: FfmpegConfig;
+}
+
+export default class Ffmpeg extends (EventEmitter as new () => TypedEmitter<FfmpegEvents>) {
   private options: FfmpegConfig;
   private logger: Logger;
   private process?: ChildProcessWithoutNullStreams;
-  private status: 'RUNNING' | 'ENDED' | 'CREATED' = 'CREATED';
+  private status: 'RUNNING' | 'ENDED' | 'ENDING' | 'CREATED' = 'CREATED';
   private framesSent: number = 0;
   private lastFrameSentTime?: number;
+  private lastOutput: string = "";
 
   constructor(logger: Logger, options: FfmpegConfig) {
     super();
@@ -34,59 +53,96 @@ export default class Ffmpeg extends EventEmitter {
     this.process.stdin.on('error', (error) => this.onProcessStdinError(error));
 
     this.process.on('error', (err: Error) => this.onProcessError(err));
-    this.process.on('exit', (_) => (this.status = 'ENDED'));
+    this.process.on('exit', (_) => {
+      if(this.status !== "ENDING") {
+        this.emit('error', {
+          ...FfmpegErrors.FFMPEG_UNEXPECTED_END,
+          details: `Last output: ${this.lastOutput}`
+        });
+      }
+      this.emit("destroyed");
+      this.status = 'ENDED';
+    });
 
     this.status = 'RUNNING';
   }
 
   destroy() {
-    this.process?.kill();
-    this.status = 'ENDED';
+    this.status = 'ENDING';
+    this.process?.kill("SIGKILL");
   }
 
-  getStatus() {
+  getStatus(): FfmpegStatus {
     return {
       status: this.status,
       framesSent: this.framesSent,
       lastFrameSentTime: this.lastFrameSentTime,
       pid: this.process?.pid,
+      options: {
+        ...this.options
+      }
     };
+  }
+
+  private emitError(error: ServerError) {
+    this.emit('error', error);
   }
 
   private onProcessOutput(data: any) {
     const message = Buffer.from(data).toString('utf8');
 
+    this.lastOutput = message;
     this.logger.trace(message);
 
     let match: RegExpMatchArray | null;
     if (message.match(/(.*): Connection refused[\n]?/g)) {
-      this.emit('fatal-error', { ...errors.RTMP_CONNECTION_FAILED, details: message });
-    // tslint:disable-next-line: no-conditional-assignment
+      this.emitError({ ...FfmpegErrors.RTMP_CONNECTION_FAILED, details: message });
+      // tslint:disable-next-line: no-conditional-assignment
     } else if ((match = message.match(/frame=[\s]+([\d]+)[\s]+.*/))) {
       this.framesSent = parseInt(match[1], 10);
       this.lastFrameSentTime = new Date().getTime();
+      this.emit('ffmpegOutput', message);
     } else {
-      this.emit('process-error', message);
+      this.emit('ffmpegOutput', message);
     }
   }
 
   private onProcessStdinError(err: Error) {
-    this.emit('fatal-error', err);
+    this.emitError({
+      ...err,
+      name: "FFMPEG_ERROR",
+      fatal: true
+    });
   }
 
   private onProcessError(err: Error) {
     this.status = 'ENDED';
     if ((err as any).code === 'ENOENT') {
-      this.emit('fatal-error', errors.FFMPEG_NOT_FOUND);
+      this.emitError(FfmpegErrors.FFMPEG_NOT_FOUND);
     }
-    this.emit('fatal-error', err);
+    this.emitError({
+      ...err,
+      name: "FFMPEG_ERROR",
+      fatal: true
+    });
   }
 
-  sendData(data: Buffer) {
-    if (this.status !== 'RUNNING') {
-      return;
-    }
-    this.process?.stdin.write(data);
+  sendData(data: Buffer): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (this.status !== 'RUNNING') {
+        reject(FfmpegErrors.FFMPEG_NOT_RUNNING);
+      }
+      this.process?.stdin.write(data, (err) => {
+        if(err) {
+          reject({
+            name: "FFMPEG_WRITE_ERROR",
+            message: err.message
+          });
+        } else {
+          resolve();
+        }
+      });
+    });
   }
 
   private getAudioEncoding(audioSampleRate: number): string {
@@ -103,8 +159,8 @@ export default class Ffmpeg extends EventEmitter {
   }
 
   private createOptions(): string[] {
-    const audioEncoding = this.getAudioEncoding(this.options.audioSampleRate);
-    const keyintMin = String(Math.min(25, this.options.framerate));
+    const audioEncoding = this.getAudioEncoding(this.options.audioSampleRate!);
+    const keyintMin = String(Math.min(25, this.options.framerate!));
 
     return [
       '-i',
@@ -118,7 +174,7 @@ export default class Ffmpeg extends EventEmitter {
       '-r',
       String(this.options.framerate),
       '-g',
-      String(this.options.framerate * 2),
+      String(this.options.framerate! * 2),
       '-keyint_min',
       keyintMin,
       '-crf',
@@ -139,7 +195,7 @@ export default class Ffmpeg extends EventEmitter {
       String(this.options.audioSampleRate),
       '-f',
       'flv',
-      this.options.rtmp,
+      this.options.rtmp!,
     ];
   }
 }

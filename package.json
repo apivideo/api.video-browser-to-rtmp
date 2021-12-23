@@ -1,7 +1,7 @@
 {
   "name": "api.video-browser-to-rtmp",
-  "version": "0.1.0",
-  "description": "",
+  "description": "Libraries to broadcast the stream of a webcam from the browser to an RTMP server.",
+  "version": "0.2.0",
   "author": "api.video <ecosystem@api.video> (https://api.video/)",
   "repository": {
     "type": "git",
@@ -16,23 +16,25 @@
     "apivideo"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run test --workspace=server  --workspace=client",
     "tslint": "npm run tslint --workspace=server  --workspace=client",
-    "build": "npm run build --workspace=server  --workspace=client"
+    "build": "npm run build --workspace=server  --workspace=client",
+    "start": "npm run start --workspace=example"
   },
   "workspaces": [
-    "server",
     "client",
-    "common",
+    "server",
     "example"
   ],
   "devDependencies": {
-    "typescript": "^4.5.4",
     "@types/chai": "^4.2.14",
     "@types/mocha": "^9.0.0",
     "chai": "^4.2.0",
     "mocha": "^9.1.3",
     "ts-node": "^9.1.1",
-    "tslint": "^6.1.3"
+    "tslint": "^6.1.3",
+    "typescript": "^4.5.4"
+  },
+  "dependencies": {
   }
 }

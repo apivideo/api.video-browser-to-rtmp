@@ -23,26 +23,41 @@
 
 <body>
     <div id="container">
-
+        <video autoplay="true" id="video"></video>
+        <button id="start">start</button>
+        <button id="pause">pause</button>
+        <button id="stop">stop</button>
+        <input type="text" id="rtmpInput" placeholder="RTMP server url" value="rtmp://broadcast.api.video/s/14fa4fc5-ee07-4f8b-bd85-3fe8a1fb3c75"/>
     </div>
 
     <script>
-        navigator.mediaDevices.getUserMedia({
+        let stream, client;
+
+        navigator.mediaDevices.getDisplayMedia({
             audio: true,
             video: true
-        }).then((stream) => {
-            const client = new BrowserToRtmpClient(stream, {
-                host: "localhost",
-                rtmpUrl: "rtmp://0.0.0.0:1935/s/abcd",
-                port: 1234
-            });
-
-            client.addListener('error', (e) => console.log(e));
-            client.start();
-
+        }).then((s) => {
+            stream = s;
+            document.getElementById("video").srcObject = stream;
         }).catch(function (err) {
             console.error(err);
         });
+
+        document.getElementById("start").addEventListener("click", () => {
+            if(!client) {
+                client = new BrowserToRtmpClient(stream, {
+                    host: "localhost",
+                    port: 1234,
+                    rtmp: document.getElementById("rtmpInput").value,
+                });
+                client.on('error', (e) => console.log(e));           
+                client.on('ffmpegOutput', (msg) => console.log(msg));           
+            }
+            client.start();
+        });
+
+        document.getElementById("stop").addEventListener("click", () => client.stop());
+        document.getElementById("pause").addEventListener("click", () => client.pause());
     </script>
 </body>
 
