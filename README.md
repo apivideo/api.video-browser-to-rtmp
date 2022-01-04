@@ -287,6 +287,7 @@ type BrowserToRtmpClientOptions = {
     audioBitsPerSecond?: number; // audio bits per second (default: 128000)
     videoBitsPerSecond?: number; // video bits per second (default: 2500000)
     audioSampleRate?: number;    // the sample rate for audio (default: audioBitsPerSecond / 4)
+    socketio?: Partial<ManagerOptions & SocketOptions>; // socket.io client options (see https://socket.io/docs/v4/client-options/)
 }
 ```
 

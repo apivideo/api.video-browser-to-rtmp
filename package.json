@@ -1,7 +1,7 @@
 {
   "name": "api.video-browser-to-rtmp",
   "description": "Libraries to broadcast the stream of a webcam from the browser to an RTMP server.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "api.video <ecosystem@api.video> (https://api.video/)",
   "repository": {
     "type": "git",

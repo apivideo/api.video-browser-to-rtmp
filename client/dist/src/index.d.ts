@@ -1,8 +1,10 @@
+import { ManagerOptions, SocketOptions } from "socket.io-client";
 import TypedEmitter from "typed-emitter";
 import { ServerError, FfmpegConfig } from "./types";
 declare type BrowserToRtmpClientOptions = {
     host: string;
     port?: number;
+    socketio?: Partial<ManagerOptions & SocketOptions>;
 } & FfmpegConfig;
 export declare type BrowserToRtmpClientEvents = {
     error: (error: ServerError) => void;

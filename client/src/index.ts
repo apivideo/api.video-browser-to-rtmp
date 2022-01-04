@@ -1,11 +1,12 @@
 import { EventEmitter } from 'events';
-import { io, Socket } from "socket.io-client";
+import { io, Manager, ManagerOptions, Socket, SocketOptions } from "socket.io-client";
 import TypedEmitter from "typed-emitter";
 import { ServerToClientEvents, ClientToServerEvents, ServerError, FfmpegConfig } from "./types"
 
 type BrowserToRtmpClientOptions = {
     host: string;
     port?: number;
+    socketio?: Partial<ManagerOptions & SocketOptions>
 } & FfmpegConfig;
 
 const DEFAULT_OPTIONS = {
@@ -40,7 +41,13 @@ export class BrowserToRtmpClient extends (EventEmitter as new () => TypedEmitter
         if (!options.host) {
             throw new Error("Missing required 'host' value");
         }
-        this.socket = io(`ws://${options.host}:${options.port}`, { reconnectionDelayMax: 10000 });
+
+        const socketOptions = {
+            reconnectionDelayMax: 10000,
+            ...(options.socketio || {})
+        }
+
+        this.socket = io(`ws://${options.host}:${options.port}`, socketOptions);
 
         this.socket.on('error', (err: ServerError) => this.onRemoteError(err));
         this.socket.on('ffmpegOutput', (msg: string) => this.emit('ffmpegOutput', msg));
