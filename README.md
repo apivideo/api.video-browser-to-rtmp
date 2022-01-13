@@ -9,6 +9,7 @@
 
 [api.video](https://api.video) is the video infrastructure for product builders. Lightning fast video APIs for integrating, scaling, and managing on-demand & low latency live streaming features in your app.
 
+**WARNING: the development of this project is still in progress. It's NOT ready to be used in production yet.**
 
 # Table of contents
 - [Table of contents](#table-of-contents)
