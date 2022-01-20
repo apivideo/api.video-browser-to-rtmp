@@ -78,7 +78,7 @@ class BrowserToRtmpServer extends (EventEmitter as new () => TypedEmitter<Browse
   private onConnection(socket: Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>) {
     const connectionId = randomUUID();
     const connection = new Connection(this.logger, socket, connectionId, (s, event) => {
-      if (this.opts.maxFfmpegInstances && this.countFfmpegInstances() >= this.opts.maxFfmpegInstances) {
+      if (typeof this.opts.maxFfmpegInstances !== "undefined" && this.countFfmpegInstances() >= this.opts.maxFfmpegInstances) {
         throw new Error("Max ffmpeg instances reached");
       }
 

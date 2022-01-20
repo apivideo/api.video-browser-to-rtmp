@@ -108,6 +108,9 @@ export default class Ffmpeg extends (EventEmitter as new () => TypedEmitter<Ffmp
   }
 
   private onProcessStdinError(err: Error) {
+    if ((err as any).code === 'EPIPE' && this.status === "ENDING") {
+      return;
+    }
     this.emitError({
       ...err,
       name: "FFMPEG_ERROR",
@@ -116,6 +119,9 @@ export default class Ffmpeg extends (EventEmitter as new () => TypedEmitter<Ffmp
   }
 
   private onProcessError(err: Error) {
+    if ((err as any).code === 'EPIPE' && this.status === "ENDING") {
+      return;
+    }
     this.status = 'ENDED';
     if ((err as any).code === 'ENOENT') {
       this.emitError(FfmpegErrors.FFMPEG_NOT_FOUND);
@@ -134,6 +140,9 @@ export default class Ffmpeg extends (EventEmitter as new () => TypedEmitter<Ffmp
       }
       this.process?.stdin.write(data, (err) => {
         if(err) {
+          if ((err as any).code === 'EPIPE' && this.status === "ENDING") {
+            return;
+          }
           reject({
             name: "FFMPEG_WRITE_ERROR",
             message: err.message

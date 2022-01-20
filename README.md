@@ -2,14 +2,12 @@
 ![](https://github.com/apivideo/API_OAS_file/blob/master/apivideo_banner.png)
 <h1 align="center">api.video browser to RTMP</h1>
 
-**@api.video/browser-to-rtmp-server** ![npm](https://img.shields.io/npm/v/@api.video/@api.video/browser-to-rtmp-server) ![ts](https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label)
-
-**@api.video/browser-to-rtmp-client** ![npm](https://img.shields.io/npm/v/@api.video/@api.video/browser-to-rtmp-client) ![ts](https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label)
+![npm](https://img.shields.io/npm/v/@api.video/@api.video/browser-to-rtmp-server) ![npm](https://img.shields.io/npm/v/@api.video/@api.video/browser-to-rtmp-client)  ![ts](https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label)
 
 
 [api.video](https://api.video) is the video infrastructure for product builders. Lightning fast video APIs for integrating, scaling, and managing on-demand & low latency live streaming features in your app.
 
-**WARNING: the development of this project is still in progress. It's NOT ready to be used in production yet.**
+**WARNING: this project is still in beta version. Use it with care and do not hesitate to report any problem you may encounter.**
 
 # Table of contents
 - [Table of contents](#table-of-contents)

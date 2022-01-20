@@ -19,7 +19,7 @@ export interface ServerToClientEvents {
 }
 
 export interface ClientToServerEvents {
-  stop: (callback: (error?: ServerError) => void) => void;
+  stop: (callback?: (error?: ServerError) => void) => void;
   start: (config: FfmpegConfig, callback: (error?: ServerError) => void) => void;
   binarystream: (data: any, callback: (error?: ServerError) => void) => void;
 }
