@@ -47,7 +47,7 @@ export class BrowserToRtmpClient extends (EventEmitter as new () => TypedEmitter
             ...(options.socketio || {})
         }
 
-        this.socket = io(`ws://${options.host}:${options.port}`, socketOptions);
+        this.socket = io(`${options.host}:${options.port}`, socketOptions);
 
         this.socket.on('error', (err: ServerError) => this.onRemoteError(err));
         this.socket.on('ffmpegOutput', (msg: string) => this.emit('ffmpegOutput', msg));
@@ -55,10 +55,10 @@ export class BrowserToRtmpClient extends (EventEmitter as new () => TypedEmitter
 
     start(): Promise<void> {
         return new Promise((resolve, reject) => {
-            if(this.mediaRecorder) {
-                if(this.mediaRecorder.state === "inactive") {
+            if (this.mediaRecorder) {
+                if (this.mediaRecorder.state === "inactive") {
                     this.mediaRecorder!.start();
-                } else if(this.mediaRecorder.state === "paused") {
+                } else if (this.mediaRecorder.state === "paused") {
                     this.mediaRecorder!.resume();
                 }
                 resolve();
@@ -73,21 +73,27 @@ export class BrowserToRtmpClient extends (EventEmitter as new () => TypedEmitter
             this.socket.emit('start', this.options, () => {
                 resolve();
                 this.mediaRecorder!.ondataavailable = (data: BlobEvent) => this.onMediaRecorderDataAvailable(data);
-                this.mediaRecorder!.start(250);
+
+                try {
+                    this.mediaRecorder!.start(250);
+                } catch (e: any) {
+                    this.socket.emit("stop");
+                    throw e;
+                }
             });
         });
     }
 
     pause() {
-        if(this.mediaRecorder) {
+        if (this.mediaRecorder) {
             this.mediaRecorder.pause();
         }
     }
 
     stop(): Promise<void> {
         return new Promise((resolve, reject) => {
-            if(this.mediaRecorder) {
-                if(this.mediaRecorder.state === "inactive") {
+            if (this.mediaRecorder) {
+                if (this.mediaRecorder.state === "inactive") {
                     resolve();
                     return;
                 }
