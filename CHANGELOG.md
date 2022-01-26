@@ -1,6 +1,9 @@
 # Changelog
 All changes to this project will be documented in this file.
 
+## [0.2.3] - 2022-01-26
+- Fix host param parsing  
+
 ## [0.2.2] - 2022-01-20
 - Bug fixes
 

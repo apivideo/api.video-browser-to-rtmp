@@ -33,7 +33,7 @@
     <script>
         let stream, client;
 
-        navigator.mediaDevices.getDisplayMedia({
+        navigator.mediaDevices.getUserMedia({
             audio: true,
             video: true
         }).then((s) => {
