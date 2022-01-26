@@ -171,7 +171,7 @@ export default class Ffmpeg extends (EventEmitter as new () => TypedEmitter<Ffmp
     const audioEncoding = this.getAudioEncoding(this.options.audioSampleRate!);
     const keyintMin = String(Math.min(25, this.options.framerate!));
 
-    return [
+    const options = [
       '-i',
       '-',
       '-c:v',
@@ -206,5 +206,7 @@ export default class Ffmpeg extends (EventEmitter as new () => TypedEmitter<Ffmp
       'flv',
       this.options.rtmp!,
     ];
+
+    return options;
   }
 }

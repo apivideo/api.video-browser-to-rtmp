@@ -42,6 +42,14 @@ export class BrowserToRtmpClient extends (EventEmitter as new () => TypedEmitter
             throw new Error("Missing required 'host' value");
         }
 
+        if (options.host[options.host.length - 1] === "/") {
+            options.host = options.host.substring(0, options.host.length - 2);
+        }
+
+        if (options.host.indexOf("http://") === 0) {
+            options.host = "ws://" + options.host.substring("http://".length);
+        }
+
         const socketOptions = {
             reconnectionDelayMax: 10000,
             ...(options.socketio || {})
