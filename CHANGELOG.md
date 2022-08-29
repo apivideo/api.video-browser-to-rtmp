@@ -1,6 +1,9 @@
 # Changelog
 All changes to this project will be documented in this file.
 
+## [0.2.4] - 2022-08-29
+- Bump dependancies
+  
 ## [0.2.3] - 2022-01-26
 - Fix host param parsing  
 

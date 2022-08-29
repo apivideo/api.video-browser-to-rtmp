@@ -1,7 +1,7 @@
 {
   "name": "@api.video/browser-to-rtmp-server",
   "description": "Library to broadcast the stream of a webcam from the browser to an RTMP server (server part).",
-  "version": "0.2.2",
+  "version": "0.2.4",
   "main": "./dist/index.js",
   "typings": "./dist/index.d.ts",
   "scripts": {
@@ -15,8 +15,8 @@
   "license": "MIT",
   "dependencies": {
     "socket.io": "^4.4.0",
+    "ts-deepmerge": "^3.0.0",
     "tslog": "^3.3.0",
-    "ts-deepmerge": "^1.1.0",
     "typed-emitter": "^1.4.0"
   },
   "devDependencies": {
